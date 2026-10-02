@@ -1,7 +1,7 @@
 import { Post, ThemeMode } from '../types';
 import { INITIAL_POSTS } from '../data/initialPosts';
 
-const POSTS_KEY = 'filipe_dev_blog_posts_v1';
+const POSTS_KEY = 'filipe_dev_blog_posts_v2';
 const BOOKMARKS_KEY = 'filipe_dev_blog_bookmarks';
 const THEME_KEY = 'filipe_dev_blog_theme_v2';
 const AUTHOR_SESSION_KEY = 'filipe_dev_blog_author_session_v2';
@@ -16,10 +16,30 @@ export const storageService = {
         localStorage.setItem(POSTS_KEY, JSON.stringify(INITIAL_POSTS));
         return INITIAL_POSTS;
       }
-      return JSON.parse(data);
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+      return INITIAL_POSTS;
     } catch {
       return INITIAL_POSTS;
     }
+  },
+
+  async fetchPostsFromServer(): Promise<Post[]> {
+    try {
+      const res = await fetch('/api/posts');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.posts) && data.posts.length > 0) {
+          localStorage.setItem(POSTS_KEY, JSON.stringify(data.posts));
+          return data.posts;
+        }
+      }
+    } catch (e) {
+      console.warn('API /api/posts unreachable, falling back to local cache:', e);
+    }
+    return this.getPosts();
   },
 
   getPostBySlug(slug: string): Post | undefined {
@@ -56,6 +76,15 @@ export const storageService = {
     } catch (e) {
       console.error('Error saving post to localStorage:', e);
     }
+
+    // Persist to Server in background
+    const targetPost = existingIndex >= 0 ? updated[existingIndex] : updated[0];
+    fetch('/api/posts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(targetPost),
+    }).catch((err) => console.error('Error saving post to backend:', err));
+
     return updated;
   },
 
@@ -66,6 +95,12 @@ export const storageService = {
     } catch (e) {
       console.error('Error deleting post:', e);
     }
+
+    // Persist deletion to Server in background
+    fetch(`/api/posts/${id}`, {
+      method: 'DELETE',
+    }).catch((err) => console.error('Error deleting post on backend:', err));
+
     return posts;
   },
 
@@ -88,6 +123,12 @@ export const storageService = {
     } catch (e) {
       console.error('Error resetting defaults:', e);
     }
+
+    // Persist reset to server
+    fetch('/api/posts/reset', { method: 'POST' }).catch((err) =>
+      console.error('Error resetting posts on backend:', err)
+    );
+
     return INITIAL_POSTS;
   },
 
@@ -102,24 +143,25 @@ export const storageService = {
   },
 
   toggleBookmark(postId: string): string[] {
-    const bookmarks = this.getBookmarks();
-    const exists = bookmarks.includes(postId);
-    const updated = exists
-      ? bookmarks.filter((id) => id !== postId)
-      : [...bookmarks, postId];
+    const current = this.getBookmarks();
+    const exists = current.includes(postId);
+    const updated = exists ? current.filter((id) => id !== postId) : [...current, postId];
     try {
       localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(updated));
     } catch (e) {
-      console.error('Error saving bookmarks:', e);
+      console.error('Error updating bookmarks:', e);
     }
     return updated;
   },
 
-  // Theme
+  // Theme Management
   getTheme(): ThemeMode {
     try {
-      const theme = localStorage.getItem(THEME_KEY) as ThemeMode;
-      return theme === 'dark' ? 'dark' : 'light'; // default to light theme
+      const stored = localStorage.getItem(THEME_KEY);
+      if (stored === 'dark' || stored === 'light') {
+        return stored;
+      }
+      return 'light';
     } catch {
       return 'light';
     }

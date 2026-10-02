@@ -67,12 +67,12 @@ export const Footer: React.FC<FooterProps> = ({
             <div className="flex flex-wrap items-center gap-2 pt-1 font-mono text-[11px] text-zinc-500">
               <span className="flex items-center gap-1">
                 <Layers className="w-3.5 h-3.5 text-zinc-400" />
-                Next.js SSG Architecture
+                Modern SSG Architecture
               </span>
               <span>•</span>
               <span className="flex items-center gap-1">
                 <Cpu className="w-3.5 h-3.5 text-emerald-500" />
-                Vercel Global Edge
+                Global Edge Network
               </span>
               <span>•</span>
               <span className="flex items-center gap-1">
@@ -88,7 +88,7 @@ export const Footer: React.FC<FooterProps> = ({
               Core Topics
             </h4>
             <ul className="space-y-2">
-              {['TypeScript', 'Vercel', 'Next.js', 'Rust', 'Performance'].map((tag) => (
+              {['TypeScript', 'Systems', 'Next.js', 'Rust', 'Performance'].map((tag) => (
                 <li key={tag}>
                   <button
                     onClick={() => onSelectTag(tag)}
@@ -108,13 +108,10 @@ export const Footer: React.FC<FooterProps> = ({
             </h4>
             <ul className="space-y-2">
               <li>
-                <button
-                  onClick={onOpenGitHubSync}
-                  className="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors flex items-center gap-1.5"
-                >
-                  <GitBranch className="w-3.5 h-3.5 text-emerald-500" />
-                  <span>GitHub & CI/CD Pipeline</span>
-                </button>
+                <div className="text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+                  <Cpu className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>Distributed Edge Compute</span>
+                </div>
               </li>
               <li>
                 <div className="text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
@@ -123,17 +120,10 @@ export const Footer: React.FC<FooterProps> = ({
                 </div>
               </li>
               <li>
-                <a
-                  href="#rss-feed"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    alert('RSS / Atom Feed XML is available for syndication. Readers can subscribe via their preferred feed reader.');
-                  }}
-                  className="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors flex items-center gap-1.5"
-                >
+                <span className="text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
                   <Rss className="w-3.5 h-3.5 text-amber-500" />
-                  <span>RSS / Atom Feed</span>
-                </a>
+                  <span>RSS / Atom Feed Syndication</span>
+                </span>
               </li>
             </ul>
           </div>

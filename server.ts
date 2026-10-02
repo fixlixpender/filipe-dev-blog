@@ -1,0 +1,163 @@
+import express from 'express';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+const PORT = 3000;
+
+app.use(express.json({ limit: '10mb' }));
+
+const DATA_FILE = path.join(__dirname, 'posts.json');
+
+// Helper to get stored posts
+function getStoredPosts(): any[] {
+  try {
+    if (fs.existsSync(DATA_FILE)) {
+      const data = fs.readFileSync(DATA_FILE, 'utf-8');
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.error('Error reading posts.json:', err);
+  }
+  return [];
+}
+
+// Helper to write stored posts
+function saveStoredPosts(posts: any[]): boolean {
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(posts, null, 2), 'utf-8');
+    return true;
+  } catch (err) {
+    console.error('Error saving posts.json:', err);
+    return false;
+  }
+}
+
+// API Routes
+app.get('/api/posts', (_req, res) => {
+  const posts = getStoredPosts();
+  res.json({ posts });
+});
+
+app.post('/api/posts', (req, res) => {
+  const post = req.body;
+  if (!post || !post.id || !post.title) {
+    return res.status(400).json({ error: 'Invalid post object' });
+  }
+
+  const posts = getStoredPosts();
+  const existingIdx = posts.findIndex((p: any) => p.id === post.id);
+  if (existingIdx >= 0) {
+    posts[existingIdx] = post;
+  } else {
+    posts.unshift(post);
+  }
+
+  saveStoredPosts(posts);
+  res.json({ success: true, posts });
+});
+
+app.delete('/api/posts/:id', (req, res) => {
+  const { id } = req.params;
+  const posts = getStoredPosts();
+  const filtered = posts.filter((p: any) => p.id !== id);
+  saveStoredPosts(filtered);
+  res.json({ success: true, posts: filtered });
+});
+
+app.post('/api/posts/sync', (req, res) => {
+  const { posts } = req.body;
+  if (Array.isArray(posts)) {
+    saveStoredPosts(posts);
+    return res.json({ success: true, posts });
+  }
+  res.status(400).json({ error: 'Expected an array of posts' });
+});
+
+app.post('/api/posts/reset', (_req, res) => {
+  const defaultPosts = [
+    {
+      id: "post-test-1",
+      slug: "test-article",
+      title: "Test Article",
+      excerpt: "This is a test article to verify publishing, real-time persistence, and edge synchronization across all devices.",
+      content: "## Test Article\n\nThis article confirms that your publishing workflow is now fully synchronized with the persistent backend server.\n\n### Key Highlights\n- **Persistent Storage**: Changes are stored server-side and survive deployments, device changes, and anonymous browsing.\n- **Zero-Login for Readers**: Visitors can browse anonymously with zero auth hurdles.\n- **Author Publishing**: The Author Studio (?admin=true or Ctrl+Shift+A) persists updates directly to the server.\n\nYou can edit or delete this article anytime from your Author Studio.",
+      category: "Testing",
+      tags: ["Test", "Publishing", "Sync"],
+      publishedAt: new Date().toISOString().split('T')[0],
+      updatedAt: new Date().toISOString().split('T')[0],
+      readTimeMinutes: 1,
+      status: "published",
+      featured: true,
+      views: 42,
+      author: {
+        name: "Filipe Oliveira",
+        role: "Staff Systems & Frontend Architect",
+        avatar: "/filipe.png",
+        github: "https://github.com",
+        twitter: "https://twitter.com"
+      }
+    }
+  ];
+  saveStoredPosts(defaultPosts);
+  res.json({ success: true, posts: defaultPosts });
+});
+
+// Serve real PNG avatar image
+app.get('/filipe.png', (_req, res) => {
+  const pngPath = path.join(__dirname, 'public', 'filipe.png');
+  if (fs.existsSync(pngPath)) {
+    res.setHeader('Content-Type', 'image/png');
+    return res.sendFile(pngPath);
+  }
+  res.status(404).end();
+});
+
+// Endpoint to upload new avatar PNG directly from Author Studio
+app.post('/api/upload-avatar', express.json({ limit: '10mb' }), (req, res) => {
+  const { dataUrl } = req.body;
+  if (!dataUrl || !dataUrl.includes('base64,')) {
+    return res.status(400).json({ error: 'Invalid image data' });
+  }
+  try {
+    const base64Data = dataUrl.split('base64,')[1];
+    const pngPath = path.join(__dirname, 'public', 'filipe.png');
+    fs.writeFileSync(pngPath, Buffer.from(base64Data, 'base64'));
+    return res.json({ success: true, url: '/filipe.png' });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to write avatar' });
+  }
+});
+
+// Vite Middleware (Dev) vs Static Files (Prod)
+async function startServer() {
+  const isProd = process.env.NODE_ENV === 'production';
+
+  if (!isProd) {
+    const { createServer: createViteServer } = await import('vite');
+    const vite = await createViteServer({
+      server: { middlewareMode: true, hmr: process.env.DISABLE_HMR !== 'true' },
+      appType: 'spa',
+    });
+    app.use(vite.middlewares);
+  } else {
+    const distPath = path.join(__dirname, 'dist');
+    app.use(express.static(distPath));
+    app.get('*', (_req, res) => {
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
+  }
+
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`[Server] Running on http://0.0.0.0:${PORT} (${isProd ? 'production' : 'development'})`);
+  });
+}
+
+startServer();

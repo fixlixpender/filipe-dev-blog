@@ -1,0 +1,28 @@
+[
+  {
+    "id": "post-test-1",
+    "slug": "test-article",
+    "title": "Test Article",
+    "excerpt": "This is a test article",
+    "content": "## Test Article\n\nThis article confirms that your publishing workflow is now fully synchronized with the persistent backend server.",
+    "category": "Testing",
+    "tags": [
+      "Test",
+      "Publishing",
+      "Sync"
+    ],
+    "publishedAt": "2026-10-02",
+    "updatedAt": "2026-10-02",
+    "readTimeMinutes": 1,
+    "status": "published",
+    "featured": true,
+    "views": 42,
+    "author": {
+      "name": "Filipe Oliveira",
+      "role": "Staff Systems & Frontend Architect",
+      "avatar": "/filipe.png",
+      "github": "https://github.com",
+      "twitter": "https://twitter.com"
+    }
+  }
+]

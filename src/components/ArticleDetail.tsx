@@ -10,14 +10,12 @@ import {
   Twitter, 
   Linkedin, 
   Copy, 
-  List,
-  Sparkles,
   ChevronRight,
   Eye,
   Type
 } from 'lucide-react';
 import { Post } from '../types';
-import { renderMarkdown, extractTableOfContents } from '../utils/markdown';
+import { renderMarkdown } from '../utils/markdown';
 
 interface ArticleDetailProps {
   post: Post;
@@ -39,15 +37,13 @@ export const ArticleDetail: React.FC<ArticleDetailProps> = ({
   onToggleBookmark,
 }) => {
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [activeHeading, setActiveHeading] = useState<string>('');
   const [copiedLink, setCopiedLink] = useState(false);
   const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xl'>('normal');
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const toc = extractTableOfContents(post.content);
   const htmlContent = renderMarkdown(post.content);
 
-  // Scroll spy & reading progress
+  // Reading progress
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -57,19 +53,6 @@ export const ArticleDetail: React.FC<ArticleDetailProps> = ({
         document.documentElement.scrollHeight - document.documentElement.clientHeight;
       const scrollRatio = windowHeight > 0 ? (totalScroll / windowHeight) * 100 : 0;
       setScrollProgress(Math.min(100, Math.max(0, scrollRatio)));
-
-      // Active heading detection
-      const headings = document.querySelectorAll('h2[id], h3[id]');
-      let currentHeadingId = '';
-      headings.forEach((heading) => {
-        const top = heading.getBoundingClientRect().top;
-        if (top < 150) {
-          currentHeadingId = heading.id;
-        }
-      });
-      if (currentHeadingId) {
-        setActiveHeading(currentHeadingId);
-      }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -190,9 +173,9 @@ export const ArticleDetail: React.FC<ArticleDetailProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-        {/* Main Article Column */}
-        <div className="lg:col-span-8 max-w-3xl">
+      <div className="max-w-3xl mx-auto">
+        {/* Main Article Content */}
+        <div>
           
           {/* Header Metadata */}
           <div className="space-y-4 mb-8">
@@ -229,9 +212,12 @@ export const ArticleDetail: React.FC<ArticleDetailProps> = ({
             <div className="pt-4 flex items-center justify-between border-t border-zinc-200/80 dark:border-zinc-800/80">
               <div className="flex items-center gap-3">
                 <img
-                  src={post.author.avatar}
+                  src={post.author.avatar || '/filipe.png'}
                   alt={post.author.name}
-                  className="w-10 h-10 rounded-full object-cover border border-zinc-300 dark:border-zinc-700"
+                  onError={(e) => {
+                    e.currentTarget.src = '/filipe.png';
+                  }}
+                  className="w-10 h-10 rounded-full object-cover border border-zinc-300 dark:border-zinc-700 bg-amber-50 dark:bg-zinc-800"
                 />
                 <div>
                   <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
@@ -301,58 +287,6 @@ export const ArticleDetail: React.FC<ArticleDetailProps> = ({
           </div>
 
         </div>
-
-        {/* Sticky Sidebar (Table of Contents & Meta) */}
-        <aside className="lg:col-span-4 hidden lg:block">
-          <div className="sticky top-24 space-y-6">
-            
-            {/* Table of Contents */}
-            {toc.length > 0 && (
-              <div className="p-5 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-900/50 backdrop-blur-xs">
-                <h3 className="text-xs font-mono uppercase tracking-wider text-zinc-900 dark:text-zinc-100 font-bold mb-3 flex items-center gap-2">
-                  <List className="w-3.5 h-3.5 text-emerald-500" />
-                  Table of Contents
-                </h3>
-                <nav className="space-y-1.5 text-xs">
-                  {toc.map((item) => {
-                    const isActive = activeHeading === item.id;
-                    return (
-                      <a
-                        key={item.id}
-                        href={`#${item.id}`}
-                        className={`block transition-colors py-1 ${
-                          item.level === 3 ? 'pl-3' : ''
-                        } ${
-                          isActive
-                            ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
-                            : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
-                        }`}
-                      >
-                        {item.text}
-                      </a>
-                    );
-                  })}
-                </nav>
-              </div>
-            )}
-
-            {/* Architecture Card */}
-            <div className="p-5 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs space-y-3">
-              <h4 className="font-mono font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                Vercel Edge Delivery
-              </h4>
-              <p className="text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                Rendered statically via Next.js SSG and cached in 300+ edge locations globally. Fast first paint and instant navigation.
-              </p>
-              <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800 text-[11px] font-mono text-zinc-400 flex items-center justify-between">
-                <span>Cache: HIT (L1 Edge)</span>
-                <span className="text-emerald-500 font-semibold">12ms TTFB</span>
-              </div>
-            </div>
-
-          </div>
-        </aside>
       </div>
 
       {/* Related Posts Section */}

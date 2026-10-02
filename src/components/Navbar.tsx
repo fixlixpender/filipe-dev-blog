@@ -132,16 +132,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </button>
 
-          {/* GitHub & Vercel Sync Modal Trigger */}
-          <button
-            onClick={onOpenGitHubSync}
-            className="p-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors hidden sm:flex items-center gap-1.5 text-xs font-mono"
-            title="GitHub Repository & Vercel Deployment"
-          >
-            <GitBranch className="w-4 h-4 text-emerald-500" />
-            <span className="hidden lg:inline text-zinc-700 dark:text-zinc-300">GitHub / Vercel</span>
-          </button>
-
           {/* Dark Mode Toggle */}
           <button
             onClick={onToggleTheme}

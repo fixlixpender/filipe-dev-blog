@@ -1,6 +1,8 @@
 {
   "name": "Filipe-Dev-Blog",
-  "description": "A high-performance, minimalist developer blog and publishing platform with author dashboard, dark mode, tag filtering, fast search, and GitHub sync.",
+  "description": "A high-performance, minimalist developer blog and publishing platform with author studio, dark mode, tag filtering, fast search, and modern systems engineering dispatches.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

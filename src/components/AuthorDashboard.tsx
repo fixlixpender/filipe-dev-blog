@@ -25,7 +25,8 @@ import {
   ShieldAlert,
   Lock,
   AlertCircle,
-  X
+  X,
+  Upload
 } from 'lucide-react';
 import { Post, GitHubRepoFile } from '../types';
 import { generateSlug, calculateReadTime, renderMarkdown } from '../utils/markdown';
@@ -144,9 +145,9 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
       featured: featured,
       views: editingPostId ? (posts.find((p) => p.id === editingPostId)?.views || 0) : 0,
       author: {
-        name: 'Filipe Silva',
+        name: 'Filipe Oliveira',
         role: 'Staff Systems & Frontend Architect',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+        avatar: '/filipe.png',
         github: 'https://github.com',
         twitter: 'https://twitter.com',
       },
@@ -171,9 +172,9 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
       status,
       views: 0,
       author: {
-        name: 'Filipe Silva',
+        name: 'Filipe Oliveira',
         role: 'Staff Systems & Frontend Architect',
-        avatar: '',
+        avatar: '/filipe.png',
       },
     };
     const md = postToMarkdownWithFrontmatter(fakePost);
@@ -197,6 +198,28 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
     }, 2200);
   };
 
+  const handleAvatarFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const dataUrl = reader.result as string;
+      try {
+        const res = await fetch('/api/upload-avatar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ dataUrl }),
+        });
+        if (res.ok) {
+          window.location.reload();
+        }
+      } catch (err) {
+        console.error('Failed to upload avatar', err);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-zinc-950/80 backdrop-blur-md flex flex-col justify-start">
       <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col">
@@ -211,11 +234,29 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-base tracking-tight">Filipe-Dev-Blog</span>
-              <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-semibold">
-                Author Studio
-              </span>
+            <div className="flex items-center gap-3">
+              <label className="relative group cursor-pointer" title="Click to upload/change your PNG avatar">
+                <img
+                  src="/filipe.png"
+                  alt="Filipe Oliveira"
+                  className="w-8 h-8 rounded-full object-cover border border-zinc-300 dark:border-zinc-700 bg-amber-50 dark:bg-zinc-800 shadow-2xs"
+                />
+                <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Upload className="w-3.5 h-3.5 text-white" />
+                </div>
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  className="hidden"
+                  onChange={handleAvatarFileSelected}
+                />
+              </label>
+              <div>
+                <span className="font-bold text-sm tracking-tight block">Filipe Oliveira</span>
+                <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold block leading-none">
+                  Author Studio
+                </span>
+              </div>
             </div>
           </div>
 

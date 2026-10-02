@@ -69,6 +69,21 @@ export default function App() {
     storageService.setTheme(theme);
   }, [theme]);
 
+  // Load & synchronize live articles from persistent backend server
+  useEffect(() => {
+    storageService.fetchPostsFromServer().then((serverPosts) => {
+      if (serverPosts && serverPosts.length > 0) {
+        setPosts(serverPosts);
+        const params = new URLSearchParams(window.location.search);
+        const postSlug = params.get('post');
+        if (postSlug) {
+          const matched = serverPosts.find((p) => p.slug === postSlug);
+          if (matched) setCurrentPost(matched);
+        }
+      }
+    });
+  }, []);
+
   // URL Query Sync for shareable article links and secret author parameters
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -339,7 +354,7 @@ export default function App() {
                 <div className="max-w-2xl space-y-3">
                   <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md text-xs font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                    <span>Edge-Compiled SSG • Vercel Global Anycast</span>
+                    <span>Edge-Compiled SSG • Global Edge Network</span>
                   </div>
 
                   <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 leading-tight">
@@ -360,15 +375,10 @@ export default function App() {
                       <Zap className="w-4 h-4 text-amber-500" />
                       Static Generation
                     </span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300">
-                      <GitBranch className="w-4 h-4 text-blue-500" />
-                      GitHub Synced
-                    </span>
                   </div>
                 </div>
 
-                {/* Author Fast Actions */}
+                {/* Search Fast Action */}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0">
                   <button
                     onClick={() => setIsSearchOpen(true)}
@@ -379,14 +389,6 @@ export default function App() {
                     <kbd className="px-1.5 py-0.5 text-[10px] font-mono text-zinc-400 bg-zinc-100 dark:bg-zinc-800 rounded">
                       ⌘K
                     </kbd>
-                  </button>
-
-                  <button
-                    onClick={() => setIsGitHubSyncOpen(true)}
-                    className="px-4 py-2 rounded-lg bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-xs font-semibold flex items-center justify-center gap-2 shadow-2xs transition-colors"
-                  >
-                    <GitBranch className="w-3.5 h-3.5" />
-                    <span>Git Workflow</span>
                   </button>
                 </div>
               </div>
