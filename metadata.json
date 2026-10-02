@@ -1,0 +1,6 @@
+{
+  "name": "Filipe-Dev-Blog",
+  "description": "A high-performance, minimalist developer blog and publishing platform with author dashboard, dark mode, tag filtering, fast search, and GitHub sync.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
