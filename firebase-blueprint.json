@@ -1,0 +1,79 @@
+{
+  "entities": {
+    "Post": {
+      "title": "Post",
+      "description": "A technical blog post published on the platform",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier of the post"
+        },
+        "slug": {
+          "type": "string",
+          "description": "URL slug for the post"
+        },
+        "title": {
+          "type": "string",
+          "description": "Headline title of the post"
+        },
+        "excerpt": {
+          "type": "string",
+          "description": "Brief summary or teaser of the post"
+        },
+        "content": {
+          "type": "string",
+          "description": "Full markdown body of the post"
+        },
+        "category": {
+          "type": "string",
+          "description": "Primary tech category"
+        },
+        "tags": {
+          "type": "array",
+          "description": "List of tags associated with the post"
+        },
+        "publishedAt": {
+          "type": "string",
+          "description": "Date of publication"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Date of latest modification"
+        },
+        "readTimeMinutes": {
+          "type": "number",
+          "description": "Estimated reading duration in minutes"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["draft", "published"],
+          "description": "Publication status"
+        },
+        "featured": {
+          "type": "boolean",
+          "description": "Whether this post is featured prominently"
+        },
+        "views": {
+          "type": "number",
+          "description": "Cumulative view count"
+        },
+        "coverImage": {
+          "type": "string",
+          "description": "Optional cover image URL"
+        },
+        "author": {
+          "type": "object",
+          "description": "Author profile details"
+        }
+      },
+      "required": ["id", "slug", "title", "content", "category", "status"]
+    }
+  },
+  "firestore": {
+    "/posts/{postId}": {
+      "schema": "Post",
+      "description": "Publicly readable blog posts with author management"
+    }
+  }
+}

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Post, ThemeMode, ViewMode, FilterState } from './types';
 import { storageService } from './services/storage';
+import { firestorePostsService } from './services/firestorePosts';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { ArticleCard } from './components/ArticleCard';
@@ -69,11 +70,12 @@ export default function App() {
     storageService.setTheme(theme);
   }, [theme]);
 
-  // Load & synchronize live articles from persistent backend server
+  // Load & synchronize live articles in real-time from Cloud Firestore
   useEffect(() => {
+    // 1. Initial fallback fetch from server cache while Firestore connects
     storageService.fetchPostsFromServer().then((serverPosts) => {
       if (serverPosts && serverPosts.length > 0) {
-        setPosts(serverPosts);
+        setPosts((current) => (current.length === 0 ? serverPosts : current));
         const params = new URLSearchParams(window.location.search);
         const postSlug = params.get('post');
         if (postSlug) {
@@ -82,6 +84,33 @@ export default function App() {
         }
       }
     });
+
+    // 2. Real-time Cloud Firestore sync (synchronizes Chrome, preview, mobile, and deployments immediately)
+    const unsubscribe = firestorePostsService.subscribePosts((cloudPosts) => {
+      if (cloudPosts && cloudPosts.length > 0) {
+        // Sync any locally authored posts that aren't yet in Firestore
+        const local = storageService.getPosts();
+        local.forEach((lp) => {
+          if (!cloudPosts.some((cp) => cp.id === lp.id || cp.slug === lp.slug)) {
+            firestorePostsService.savePost(lp);
+          }
+        });
+
+        setPosts(cloudPosts);
+        try {
+          localStorage.setItem('filipe_dev_blog_posts_v2', JSON.stringify(cloudPosts));
+        } catch (_) {}
+
+        const params = new URLSearchParams(window.location.search);
+        const postSlug = params.get('post');
+        if (postSlug) {
+          const matched = cloudPosts.find((p) => p.slug === postSlug);
+          if (matched) setCurrentPost(matched);
+        }
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   // URL Query Sync for shareable article links and secret author parameters
@@ -207,26 +236,41 @@ export default function App() {
     setIsDashboardOpen(false);
   };
 
-  // Author dashboard CRUD handlers
-  const handleSavePost = (savedPost: Post) => {
+  // Author dashboard CRUD handlers (instant UI + Firestore sync)
+  const handleSavePost = async (savedPost: Post) => {
     const updated = storageService.savePost(savedPost);
     setPosts(updated);
     if (currentPost?.id === savedPost.id) {
       setCurrentPost(savedPost);
     }
+    try {
+      await firestorePostsService.savePost(savedPost);
+    } catch (e) {
+      console.error('Failed to sync post to Firestore:', e);
+    }
   };
 
-  const handleDeletePost = (id: string) => {
+  const handleDeletePost = async (id: string) => {
     const updated = storageService.deletePost(id);
     setPosts(updated);
     if (currentPost?.id === id) {
       handleBackToHome();
     }
+    try {
+      await firestorePostsService.deletePost(id);
+    } catch (e) {
+      console.error('Failed to delete post from Firestore:', e);
+    }
   };
 
-  const handleResetDefaults = () => {
+  const handleResetDefaults = async () => {
     const reset = storageService.resetDefaults();
     setPosts(reset);
+    try {
+      await firestorePostsService.seedInitialPosts(reset);
+    } catch (e) {
+      console.error('Failed to reset Firestore posts:', e);
+    }
   };
 
   // Derived filter calculations

@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidPost(data) {
+      return data.id is string && data.id.size() <= 128
+        && data.slug is string && data.slug.size() <= 200
+        && data.title is string && data.title.size() <= 300
+        && data.content is string && data.content.size() <= 100000
+        && data.category is string && data.category.size() <= 100
+        && data.status in ['draft', 'published']
+        && (!('views' in data) || data.views is number)
+        && (!('featured' in data) || data.featured is bool)
+        && (!('tags' in data) || (data.tags is list && data.tags.size() <= 20))
+        && (!('author' in data) || data.author is map);
+    }
+
+    match /posts/{postId} {
+      // Public read access for blog readers
+      allow read: if true;
+
+      // Create, update, delete for blog posts with shape validation
+      allow create: if isValidId(postId) && isValidPost(request.resource.data);
+      allow update: if isValidId(postId) && isValidPost(request.resource.data);
+      allow delete: if isValidId(postId);
+    }
+  }
+}

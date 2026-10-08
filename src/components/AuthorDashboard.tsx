@@ -147,7 +147,7 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
       author: {
         name: 'Filipe Oliveira',
         role: 'Staff Systems & Frontend Architect',
-        avatar: '/filipe.png',
+        avatar: '/filipe-avatar.png?v=2',
         github: 'https://github.com',
         twitter: 'https://twitter.com',
       },
@@ -174,7 +174,7 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
       author: {
         name: 'Filipe Oliveira',
         role: 'Staff Systems & Frontend Architect',
-        avatar: '/filipe.png',
+        avatar: '/filipe-avatar.png?v=2',
       },
     };
     const md = postToMarkdownWithFrontmatter(fakePost);
@@ -237,7 +237,7 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
             <div className="flex items-center gap-3">
               <label className="relative group cursor-pointer" title="Click to upload/change your PNG avatar">
                 <img
-                  src="/filipe.png"
+                  src="/filipe-avatar.png?v=2"
                   alt="Filipe Oliveira"
                   className="w-8 h-8 rounded-full object-cover border border-zinc-300 dark:border-zinc-700 bg-amber-50 dark:bg-zinc-800 shadow-2xs"
                 />

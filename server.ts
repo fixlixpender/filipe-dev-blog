@@ -100,7 +100,7 @@ app.post('/api/posts/reset', (_req, res) => {
       author: {
         name: "Filipe Oliveira",
         role: "Staff Systems & Frontend Architect",
-        avatar: "/filipe.png",
+        avatar: "/filipe-avatar.png",
         github: "https://github.com",
         twitter: "https://twitter.com"
       }
@@ -110,27 +110,45 @@ app.post('/api/posts/reset', (_req, res) => {
   res.json({ success: true, posts: defaultPosts });
 });
 
-// Serve real PNG avatar image
-app.get('/filipe.png', (_req, res) => {
-  const pngPath = path.join(__dirname, 'public', 'filipe.png');
+// Serve real PNG avatar image with strict cache busting
+app.get(['/filipe-avatar.png', '/avatar.png', '/filipe.png'], (_req, res) => {
+  const pngPath = path.join(__dirname, 'public', 'filipe-avatar.png');
   if (fs.existsSync(pngPath)) {
     res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
     return res.sendFile(pngPath);
   }
   res.status(404).end();
 });
 
-// Endpoint to upload new avatar PNG directly from Author Studio
-app.post('/api/upload-avatar', express.json({ limit: '10mb' }), (req, res) => {
+// Endpoint to upload new avatar PNG directly from Author Studio or Article page
+app.post('/api/upload-avatar', express.json({ limit: '15mb' }), (req, res) => {
   const { dataUrl } = req.body;
   if (!dataUrl || !dataUrl.includes('base64,')) {
     return res.status(400).json({ error: 'Invalid image data' });
   }
   try {
     const base64Data = dataUrl.split('base64,')[1];
-    const pngPath = path.join(__dirname, 'public', 'filipe.png');
-    fs.writeFileSync(pngPath, Buffer.from(base64Data, 'base64'));
-    return res.json({ success: true, url: '/filipe.png' });
+    const buffer = Buffer.from(base64Data, 'base64');
+    fs.writeFileSync(path.join(__dirname, 'public', 'filipe-avatar.png'), buffer);
+    fs.writeFileSync(path.join(__dirname, 'public', 'filipe.png'), buffer);
+    fs.writeFileSync(path.join(__dirname, 'public', 'avatar.png'), buffer);
+
+    // Also update existing posts with new avatar timestamp
+    const posts = getStoredPosts();
+    const updatedPosts = posts.map(p => ({
+      ...p,
+      author: {
+        ...p.author,
+        name: 'Filipe Oliveira',
+        avatar: `/filipe-avatar.png?v=${Date.now()}`
+      }
+    }));
+    saveStoredPosts(updatedPosts);
+
+    return res.json({ success: true, url: `/filipe-avatar.png?v=${Date.now()}` });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to write avatar' });
   }

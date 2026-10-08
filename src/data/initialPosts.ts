@@ -17,7 +17,7 @@ export const INITIAL_POSTS: Post[] = [
     author: {
       name: 'Filipe Oliveira',
       role: 'Staff Systems & Frontend Architect',
-      avatar: '/filipe.png',
+      avatar: '/filipe-avatar.png?v=2',
       github: 'https://github.com',
       twitter: 'https://twitter.com',
     },
@@ -49,7 +49,7 @@ You can edit or delete this article anytime from your Author Studio.`
     author: {
       name: 'Filipe Oliveira',
       role: 'Staff Systems & Frontend Architect',
-      avatar: '/filipe.png',
+      avatar: '/filipe-avatar.png?v=2',
       github: 'https://github.com',
       twitter: 'https://twitter.com'
     },
