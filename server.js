@@ -84,7 +84,7 @@ app.post("/api/posts/reset", (_req, res) => {
       author: {
         name: "Filipe Oliveira",
         role: "Staff Systems & Frontend Architect",
-        avatar: "/filipe-avatar.png",
+        avatar: "/filipe-avatar.jpg?v=4",
         github: "https://github.com",
         twitter: "https://twitter.com"
       }
@@ -93,14 +93,17 @@ app.post("/api/posts/reset", (_req, res) => {
   saveStoredPosts(defaultPosts);
   res.json({ success: true, posts: defaultPosts });
 });
-app.get(["/filipe-avatar.png", "/avatar.png", "/filipe.png"], (_req, res) => {
+app.get(["/filipe-avatar.jpg", "/avatar.jpg", "/filipe.jpg", "/filipe-avatar.png", "/avatar.png", "/filipe.png"], (req, res) => {
+  const jpgPath = path.join(__dirname, "public", "filipe-avatar.jpg");
   const pngPath = path.join(__dirname, "public", "filipe-avatar.png");
-  if (fs.existsSync(pngPath)) {
-    res.setHeader("Content-Type", "image/png");
+  const targetPath = fs.existsSync(jpgPath) ? jpgPath : pngPath;
+  if (fs.existsSync(targetPath)) {
+    const isJpg = targetPath.endsWith(".jpg") || req.path.endsWith(".jpg");
+    res.setHeader("Content-Type", isJpg ? "image/jpeg" : "image/jpeg");
     res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     res.setHeader("Pragma", "no-cache");
     res.setHeader("Expires", "0");
-    return res.sendFile(pngPath);
+    return res.sendFile(targetPath);
   }
   res.status(404).end();
 });
@@ -112,6 +115,8 @@ app.post("/api/upload-avatar", express.json({ limit: "15mb" }), (req, res) => {
   try {
     const base64Data = dataUrl.split("base64,")[1];
     const buffer = Buffer.from(base64Data, "base64");
+    fs.writeFileSync(path.join(__dirname, "public", "filipe-avatar.jpg"), buffer);
+    fs.writeFileSync(path.join(__dirname, "public", "avatar.jpg"), buffer);
     fs.writeFileSync(path.join(__dirname, "public", "filipe-avatar.png"), buffer);
     fs.writeFileSync(path.join(__dirname, "public", "filipe.png"), buffer);
     fs.writeFileSync(path.join(__dirname, "public", "avatar.png"), buffer);
@@ -121,11 +126,11 @@ app.post("/api/upload-avatar", express.json({ limit: "15mb" }), (req, res) => {
       author: {
         ...p.author,
         name: "Filipe Oliveira",
-        avatar: `/filipe-avatar.png?v=${Date.now()}`
+        avatar: `/filipe-avatar.jpg?v=${Date.now()}`
       }
     }));
     saveStoredPosts(updatedPosts);
-    return res.json({ success: true, url: `/filipe-avatar.png?v=${Date.now()}` });
+    return res.json({ success: true, url: `/filipe-avatar.jpg?v=${Date.now()}` });
   } catch (err) {
     return res.status(500).json({ error: "Failed to write avatar" });
   }

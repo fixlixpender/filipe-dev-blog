@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Post } from '../types';
 import { renderMarkdown } from '../utils/markdown';
+import { AuthorAvatar } from './AuthorAvatar';
 
 interface ArticleDetailProps {
   post: Post;
@@ -212,43 +213,11 @@ export const ArticleDetail: React.FC<ArticleDetailProps> = ({
             {/* Author Profile Card */}
             <div className="pt-4 flex items-center justify-between border-t border-zinc-200/80 dark:border-zinc-800/80">
               <div className="flex items-center gap-3">
-                <label className="relative group cursor-pointer" title="Click to upload custom PNG picture">
-                  <img
-                    src={post.author.avatar || '/filipe-avatar.png?v=2'}
-                    alt={post.author.name}
-                    onError={(e) => {
-                      e.currentTarget.src = '/filipe-avatar.png?v=2';
-                    }}
-                    className="w-10 h-10 rounded-full object-cover border border-zinc-300 dark:border-zinc-700 bg-amber-50 dark:bg-zinc-800"
-                  />
-                  <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Upload className="w-4 h-4 text-white" />
-                  </div>
-                  <input
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp"
-                    className="hidden"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      const reader = new FileReader();
-                      reader.onload = async () => {
-                        const dataUrl = reader.result as string;
-                        try {
-                          await fetch('/api/upload-avatar', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ dataUrl }),
-                          });
-                          window.location.reload();
-                        } catch (err) {
-                          console.error(err);
-                        }
-                      };
-                      reader.readAsDataURL(file);
-                    }}
-                  />
-                </label>
+                <AuthorAvatar
+                  src="/filipe-avatar.jpg?v=4"
+                  name={post.author.name}
+                  size="md"
+                />
                 <div>
                   <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                     {post.author.name}

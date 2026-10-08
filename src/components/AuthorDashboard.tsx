@@ -31,6 +31,7 @@ import {
 import { Post, GitHubRepoFile } from '../types';
 import { generateSlug, calculateReadTime, renderMarkdown } from '../utils/markdown';
 import { generateRepositoryFiles, postToMarkdownWithFrontmatter, downloadFile } from '../utils/exportGit';
+import { AuthorAvatar } from './AuthorAvatar';
 
 interface AuthorDashboardProps {
   posts: Post[];
@@ -147,7 +148,7 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
       author: {
         name: 'Filipe Oliveira',
         role: 'Staff Systems & Frontend Architect',
-        avatar: '/filipe-avatar.png?v=2',
+        avatar: '/filipe-avatar.jpg?v=4',
         github: 'https://github.com',
         twitter: 'https://twitter.com',
       },
@@ -174,7 +175,7 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
       author: {
         name: 'Filipe Oliveira',
         role: 'Staff Systems & Frontend Architect',
-        avatar: '/filipe-avatar.png?v=2',
+        avatar: '/filipe-avatar.jpg?v=4',
       },
     };
     const md = postToMarkdownWithFrontmatter(fakePost);
@@ -235,22 +236,11 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
               <ArrowLeft className="w-4 h-4" />
             </button>
             <div className="flex items-center gap-3">
-              <label className="relative group cursor-pointer" title="Click to upload/change your PNG avatar">
-                <img
-                  src="/filipe-avatar.png?v=2"
-                  alt="Filipe Oliveira"
-                  className="w-8 h-8 rounded-full object-cover border border-zinc-300 dark:border-zinc-700 bg-amber-50 dark:bg-zinc-800 shadow-2xs"
-                />
-                <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Upload className="w-3.5 h-3.5 text-white" />
-                </div>
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp"
-                  className="hidden"
-                  onChange={handleAvatarFileSelected}
-                />
-              </label>
+              <AuthorAvatar
+                src="/filipe-avatar.jpg?v=4"
+                name="Filipe Oliveira"
+                size="sm"
+              />
               <div>
                 <span className="font-bold text-sm tracking-tight block">Filipe Oliveira</span>
                 <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold block leading-none">
